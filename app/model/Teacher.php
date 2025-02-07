@@ -24,7 +24,6 @@ class Teacher extends Member
     }
     public function hasStatut(): ?object
     {
-
         $result = $this->db->selectBy("teachers", ["id_user" => $this->id_user]);
         if (empty($result)) {
             return null;

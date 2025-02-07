@@ -85,7 +85,8 @@ $message = '';
 
             <!-- Menu Principal -->
             <div x-data="{ open: false }" :class="{'block': open, 'hidden': !open}" class="hidden lg:flex items-center space-x-4">
-                <a href="mesCourses.php"
+                <a href=" <?php echo BASE_URL ."\\teacher" ?> "
+
                     class="text-gray-700 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Mes Cours
                 </a>

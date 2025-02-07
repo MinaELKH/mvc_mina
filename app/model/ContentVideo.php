@@ -6,7 +6,7 @@ class ContentVideo extends AbstractContent {
     private ?string $url;
     private ?int $duration ;
     public function __construct(
-        ?\config\DataBaseManager $db,
+      $db,
         ?int $id_content = null,
         ?int $id_course = null,
         ?string $title = null,

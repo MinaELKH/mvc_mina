@@ -10,102 +10,10 @@ if (Session::isLoggedIn() && session::hasRole('teacher')) {
     $s_userEmail = Session::get('user')['email'];
     $s_userRole = Session::get('user')['role'];
     $s_userAvatar = Session::get('user')['avatar'];
-    //  var_dump($userAvatar); 
-}
 
-// Récupérer les catégories pour le select
-
-
-
-
-// Ajout de cours
-if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["add_course"])) {
-    try {
-        // Validation des champs
-        if (empty($_POST['title'])) {
-            throw new Exception("Le titre du cours est obligatoire.");
-        }
-        if (empty($_POST['id_categorie'])) {
-            throw new Exception("La catégorie est obligatoire.");
-        }
-
-
-        $uploadResult = uploadImage($_FILES['picture']);
-        $picture = $uploadResult['filePath'];
-        // Création du cours
-        $newCourse = new Course(
-            $dbManager,
-            0,
-            $_POST['title'],
-            $_POST['description'],
-            $picture,
-            $s_userId, // Supposant que l'ID du professeur est dans la session
-            $_POST['id_categorie'],
-            Course::STATUS_PENDING,
-            0, //archive
-            $_POST['prix'],
-            $_POST['type']
-        );
-
-       $result = $newCourse->add();
-       $id_course = $dbManager->getLastInsertId();
-        if ($result) {
-            
-            // Gestion du contenu en fonction du type
-            $type = $_POST['type'];
-
-            if ($type === 'video') {
-                // Validation des champs spécifiques au type "Vidéo"
-                
-             
-                    if (!empty($_POST['videoURL'])) {
-                        $url= $_POST['videoURL'];
-                    } elseif (isset($_FILES['videoUpload'])) {
-                        $url = uploadVideo($_FILES['videoUpload']);
-                     
-                    }
-             
-              
-                // Création du contenu vidéo
-                $videoContent = new ContentVideo($dbManager);
-                $videoContent->setCourseId($id_course);
-                $videoContent->setTitle($_POST['title']);
-                $videoContent->setUrl($url['filePath']);
-                $videoContent->setDuration((int)$_POST['duration']);
-
-                if (!$videoContent->add()) {
-                    throw new Exception("Échec de l'ajout du contenu vidéo.");
-                }
-            } elseif ($type === 'texte') {
-                // Validation des champs spécifiques au type "Texte"
-                if (empty($_POST['content'])) {
-                    throw new Exception("Le contenu texte est obligatoire.");
-                }
-
-                // Création du contenu texte
-                $textContent = new ContentText($dbManager);
-                $textContent->setCourseId($id_course);
-                $textContent->setTitle($_POST['title']);
-                $textContent->setContent($_POST['content']);
-
-                if (!$textContent->add()) {
-                    throw new Exception("Échec de l'ajout du contenu texte.");
-                }
-            } else {
-                throw new Exception("Type de contenu invalide.");
-            }
-
-            // Succès
-            setSweetAlertMessage('Succès', 'Le cours et son contenu ont été ajoutés avec succès', 'success', 'addCourse.php');
-        } else {
-            throw new Exception("Échec de l'ajout du contenue.");
-           
-        }
-    } catch (Exception $e) {
-        setSweetAlertMessage('Erreur', $e->getMessage(), 'error', 'addCourse.php');
-    }
 }
 ?>
+
 
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden">

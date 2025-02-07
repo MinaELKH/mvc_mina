@@ -1,53 +1,11 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("../sweetAlert.php");
-require_once("../uploadimage.php");
 ob_start();
+$course = $data['course'];
 
-use classes\Course;
-use classes\Categorie;
-use classes\ContentText;
-use classes\ContentVideo;
-use config\DataBaseManager;
 
-$dbManager = new DataBaseManager();
 
-// Récupérer l'ID du cours depuis l'URL
-$id_course = $_GET['id_course'] ?? null;
 
-if (!$id_course || !is_numeric($id_course)) {
-    die("ID de cours invalide ou manquant.");
-}
 
-// Récupérer les catégories pour le select
-
-$categories = Categorie::getAll($dbManager);
-
-// Charger les données du cours pour la pré-remplir dans le formulaire
-try {
-    $newCourse = new Course($dbManager, $id_course);
-    $course = $newCourse->getById();
-    // echo "heelo";
-    // var_dump( $course->type) ; 
-    // die();
-
-    if (!$course) {
-        throw new Exception("Le cours avec l'ID $id_course n'existe pas.");
-    } else {
-
-        if ($course->type == 'video') {
-            $newContent = new ContentVideo($dbManager, 0, $id_course);
-        } elseif ($course->type == 'texte') {
-
-            $newContent = new ContentText($dbManager, 0, $id_course);
-        }
-        $newContent = $newContent->getByIdCourse();
-    }
-} catch (Exception $e) {
-    // Gérer les erreurs
-    error_log($e->getMessage());
-    die("Erreur : Impossible de charger les données du cours.");
-}
 ?>
 
 <!-- update  -->
@@ -170,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
                         name="id_categorie"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Sélectionnez une catégorie</option>
-                        <?php foreach ($categories as $categorie): ?>
+                        <?php foreach ($data['categories'] as $categorie): ?>
                             <option value="<?= $categorie->id_categorie ?>" <?= $categorie->id_categorie == $course->id_categorie ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($categorie->name) ?>
                             </option>
@@ -212,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
                             </div>
                             <input
                                 type="file"
-                                value="<?= htmlspecialchars($categorie->picture) ?>"
+                                value="<?= htmlspecialchars($course->picture) ?>"
                                 name="picture"
                                 id="picture"
                                 accept="image/*"

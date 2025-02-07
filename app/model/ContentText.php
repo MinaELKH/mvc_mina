@@ -9,7 +9,7 @@ class ContentText extends AbstractContent
     private ?string $content = null; 
 
     public function __construct(
-        ?\config\DataBaseManager $db,
+        $db,
         ?int $id_content = null,
         ?int $id_course = null,
         ?string $title = null,

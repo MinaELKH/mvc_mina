@@ -4,14 +4,14 @@ namespace App\model;
 use App\config\DataBaseManager;
 
 abstract class AbstractContent {
-    protected ?\config\DataBaseManager $db;
+    protected $db;
     protected ?int $id_content;
     protected ?int $id_course;
     protected ?string $title;
     protected ?string $type;
 
     public function __construct(
-        ?DataBaseManager $db,
+         $db,
         ?int $id_content = null,
         ?int $id_course = null,
         ?string $title = null,

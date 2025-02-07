@@ -2,26 +2,8 @@
 
 ob_start();
 
-use App\helpers\SweetAlert;
-use config\session;
+use App\config\session;
 
-// affichage 
-
-// Archivage d'un cours
-//if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
-//    try {
-//        $course = new Course($dbManager, $_POST['id_course']);
-//        $result = $course->archive();
-//
-//        if ($result) {
-//            setSweetAlertMessage('Succès', 'Le cours a été archivé avec succès.', 'success', '');
-//        } else {
-//            setSweetAlertMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter l\'administrateur.', 'error', '');
-//        }
-//    } catch (Exception $e) {
-//        setSweetAlertMessage('Erreur', $e->getMessage(), 'error', '');
-//    }
-//}
 
 
 
@@ -174,8 +156,8 @@ use config\session;
                         </form>
 
                         <!-- Icône de modification -->
-                        <a href="updateCourse.php?id_course=<?= htmlspecialchars($course->id_course); ?>"
-                            class="bg-gray-200/50 rounded-full p-1 hover:bg-gray-300/70">
+                        <a href="<?= BASE_URL . "/Teacher/viewUpdate/" . htmlspecialchars($course->id_course) ?>"
+                        class="bg-gray-200/50 rounded-full p-1 hover:bg-gray-300/70">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>

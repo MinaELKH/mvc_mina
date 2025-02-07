@@ -19,6 +19,7 @@ class TeacherController extends Controller
     private $dbManager; // Attribut de classe
     private $newCourse;
     private  $teacherId ;
+    private  $statut ;
 
 
     public function __construct()
@@ -28,6 +29,10 @@ class TeacherController extends Controller
             $this->newCourse = new Course( $this->dbManager ) ;
             $s_userId = Session::get('user')['id'];
             $this->teacherId =  $s_userId;
+            $newTeacher = new Teacher($this->dbManager, $this->teacherId);
+            $this->statut = $newTeacher->hasStatut();
+
+
         } else {
             SweetAlert::setMessage(
                 'Authentification requise ⚠️',
@@ -59,13 +64,16 @@ class TeacherController extends Controller
             $topStudents = $newTeacher->getTopStudentbyTeacher();
 
             $data = [
-                'statut' => $statut,
+                'statut' => $newTeacher->hasStatut(),
                 'countCourses' => $countCourses,
                 'countInscrits' => $countInscrits,
                 'topStudents' => $topStudents,
                 'ca' => $ca,
                 'courses' => $courses
             ] ;
+
+//            var_dump($this->statut);
+//            die();
             $this->view('espaceTeacher/mesCourses', $data);
 
 
@@ -185,8 +193,131 @@ class TeacherController extends Controller
     }
 
     public function viewAdd() {
-        $this->view('spaceTeacher/addCourse');;
         $categories = Categorie::getAll($this->dbManager);
+        $data=['statut'=>$this->statut , 'categories'=>$categories]; ;
+        $this->view('espaceTeacher/addCourse' , $data);;
+
 
     }
+
+    public function viewUpdate($id) {
+       $this->view('espaceTeacher/updateCourse');
+        $id_course = $id;
+        if (!$id_course || !is_numeric($id_course)) {
+            die("ID de cours invalide ou manquant.");
+        }
+        $categories = Categorie::getAll($this->dbManager);
+
+        try {
+            $newCourse = new Course($this->dbManager, $id_course);
+            $course = $newCourse->getById();
+            // echo "heelo";
+            // var_dump( $course->type) ;
+            // die();
+
+            if (!$course) {
+                throw new Exception("Le cours avec l'ID $id_course n'existe pas.");
+            } else {
+
+                if ($course->type == 'video') {
+                    $newContent = new ContentVideo($this->dbManager, 0, $id_course);
+                } elseif ($course->type == 'texte') {
+
+                    $newContent = new ContentText($this->dbManager, 0, $id_course);
+                }
+                $newContent = $newContent->getByIdCourse();
+            }
+
+
+            $newTeacher = new Teacher($this->dbManager, $this->teacherId);
+            $data=[
+                'statut' => $newTeacher->hasStatut(),
+                'course' => $course,
+                'categories' => $categories,
+                'newContent' => $newContent
+            ] ;
+
+            var_dump($this->statut);
+            die();
+        } catch (Exception $e) {
+            // Gérer les erreurs
+            error_log($e->getMessage());
+            die("Erreur : Impossible de charger les données du cours.");
+        }
+
+    }
+
+
+    public function Update($id_course) {
+        try {
+            //rempli l objet
+            $newCourse->title = $_POST['title'];
+            $newCourse->description = $_POST['description'];
+            $newCourse->id_categorie = $_POST['id_categorie'];
+            $newCourse->prix = $_POST['prix'];
+
+            // Gestion de l'image
+            if (!empty($_FILES['picture']['name'])) {
+                $uploadedFile = uploadImage($_FILES['picture']); // fonction uploadImage() pour gérer les fichiers
+                if ($uploadedFile) {
+                    $newCourse->picture = $uploadedFile;
+                } else {
+                    throw new Exception("Échec du téléchargement de l'image.");
+                }
+            }
+            $newCourse->update() ;
+
+            $type = $_POST['type'];
+
+            if ($type === 'video') {
+                // Validation des champs spécifiques au type "Vidéo"
+
+
+                if (!empty($_POST['videoURL'])) {
+                    $url = $_POST['videoURL'];
+                } elseif (isset($_FILES['videoUpload'])) {
+                    $url = uploadVideo($_FILES['videoUpload']);
+                }
+
+
+                // Création du contenu vidéo
+                $videoContent = new ContentVideo($dbManager);
+                $videoContent->setContentId($id_content);
+                $videoContent->setCourseId($id_course);
+                $videoContent->setTitle($_POST['title']);
+                $videoContent->setUrl($url['filePath']);
+                $videoContent->setDuration((int)$_POST['duration']);
+
+                if (!$videoContent->update()) {
+                    throw new Exception("Échec de l'ajout du contenu vidéo.");
+                }
+            } elseif ($type === 'texte') {
+                //   var_dump($type);
+                //   die();
+                // Validation des champs spécifiques au type "Texte"
+                if (empty($_POST['content'])) {
+                    throw new Exception("Le contenu texte est obligatoire.");
+                }
+
+                // Création du contenu texte
+                $textContent = new ContentText($dbManager);
+                $textContent->setContentId($newContent->id_content);
+                $textContent->setCourseId($id_course);
+                $textContent->setTitle($_POST['title']);
+                $textContent->setContent($_POST['content']);
+
+                if (!$textContent->update()) {
+                    throw new Exception("Échec de l'ajout du contenu texte.");
+                }
+            } else {
+                throw new Exception("Type de contenu invalide.");
+            }
+        } catch (Exception $e) {
+            // Gérer les erreurs
+            setSweetAlertMessage('Erreur', htmlspecialchars($e->getMessage()), 'error', '');
+        }
+    }
 }
+
+
+
