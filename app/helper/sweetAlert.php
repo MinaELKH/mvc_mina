@@ -1,5 +1,5 @@
 <?php
-namespace App\helpers;
+namespace App\helper;
 
 class SweetAlert {
     public static function setMessage($title, $text, $status, $redirectPage) {

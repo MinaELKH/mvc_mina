@@ -40,20 +40,7 @@ class Session extends controller{
         return false; 
     }
 
-    public static function gotoLocation($role){
-    
-        if ($role == "student") {
-            header('Location: /home');
-            exit(); 
-        } elseif ($role == "teacher") {
-            header('Location: /espaceTeacher/mesCourses.php');
-            exit();
-        }  elseif ($role == "admin") {
-           
-            header('Location: /espaceAdmin/dashboard.php');
-            exit();
-        }
-    }
+
 
 
 

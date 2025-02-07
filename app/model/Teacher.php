@@ -31,6 +31,11 @@ class Teacher extends Member
         $row = $result[0];
         return (object) $row;
     }
+
+    public function getStatut()
+    {
+        return $this->approved;
+    }
     public function approved($statut): bool
     {
         $data = [

@@ -1,96 +1,13 @@
 <?php
 ob_start();
 $course = $data['course'];
-
-
-
-
-
 ?>
-
-<!-- update  -->
-
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
-    try {
-        //rempli l objet
-        $newCourse->title = $_POST['title'];
-        $newCourse->description = $_POST['description'];
-        $newCourse->id_categorie = $_POST['id_categorie'];
-        $newCourse->prix = $_POST['prix'];
-
-        // Gestion de l'image
-        if (!empty($_FILES['picture']['name'])) {
-            $uploadedFile = uploadImage($_FILES['picture']); // fonction uploadImage() pour gérer les fichiers
-            if ($uploadedFile) {
-                $newCourse->picture = $uploadedFile;
-            } else {
-                throw new Exception("Échec du téléchargement de l'image.");
-            }
-        }
-        $newCourse->update() ; 
-
-        $type = $_POST['type'];
-       
-        if ($type === 'video') {
-            // Validation des champs spécifiques au type "Vidéo"
-
-
-            if (!empty($_POST['videoURL'])) {
-                $url = $_POST['videoURL'];
-            } elseif (isset($_FILES['videoUpload'])) {
-                $url = uploadVideo($_FILES['videoUpload']);
-            }
-
-
-            // Création du contenu vidéo
-            $videoContent = new ContentVideo($dbManager);
-            $videoContent->setContentId($id_content);
-            $videoContent->setCourseId($id_course);
-            $videoContent->setTitle($_POST['title']);
-            $videoContent->setUrl($url['filePath']);
-            $videoContent->setDuration((int)$_POST['duration']);
-
-            if (!$videoContent->update()) {
-                throw new Exception("Échec de l'ajout du contenu vidéo.");
-            }
-        } elseif ($type === 'texte') {
-         //   var_dump($type);
-         //   die();
-            // Validation des champs spécifiques au type "Texte"
-            if (empty($_POST['content'])) {
-                throw new Exception("Le contenu texte est obligatoire.");
-            }
-
-            // Création du contenu texte
-            $textContent = new ContentText($dbManager);
-            $textContent->setContentId($newContent->id_content);
-            $textContent->setCourseId($id_course);
-            $textContent->setTitle($_POST['title']);
-            $textContent->setContent($_POST['content']);
-
-            if (!$textContent->update()) {
-                throw new Exception("Échec de l'ajout du contenu texte.");
-            }
-        } else {
-            throw new Exception("Type de contenu invalide.");
-        }
-    } catch (Exception $e) {
-        // Gérer les erreurs
-        setSweetAlertMessage('Erreur', htmlspecialchars($e->getMessage()), 'error', '');
-    }
-}
-
-?>
-
-
-
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg overflow-hidden">
         <div class="p-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Modifier le Cours</h2>
 
-            <form method="POST" action="" enctype="multipart/form-data" class="space-y-6" id="courseForm">
+            <form  action= <?php echo BASE_URL ."/teacher/ModifierCourse/".$course->id_course?>   method="POST"    enctype="multipart/form-data" class="space-y-6" id="courseForm">
                 <!-- Titre du Cours -->
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
@@ -196,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
 
                     <div id="typeError" class="text-red-500 text-sm hidden">Le type de contenu est obligatoire.</div>
                 </div>
-  
+
 
                 <!-- Champs text-->
                 <div id="textFields" class="hidden">
@@ -205,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_course'])) {
                             Contenu Texte <span class="text-red-500">*</span>
                         </label>
                         <div id="quill-editor" class="w-full h-40 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                           Ajouter votre nouveau content 
+                           Ajouter votre nouveau content
                         </div>
                         <input type="hidden" name="content" id="content">
                         <div id="contentError" class="text-red-500 text-sm hidden"></div>

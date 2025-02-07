@@ -90,7 +90,7 @@ $message = '';
                     class="text-gray-700 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Mes Cours
                 </a>
-                <a href="teacher/viewAdd"
+                <a href="<?php echo BASE_URL ."\\teacher\\viewAdd" ?>"
                     class="text-gray-700 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Ajouter un nouveau cours
                 </a>
@@ -131,8 +131,8 @@ $message = '';
                     <!-- Dropdown Menu -->
                     <div x-show="open" @click.away="open = false"
                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-20 border">
-                        <a href="../auth/logout.php"
-                            class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
+                        <a href="<?= BASE_URL . '/Auth/deconnexion'; ?>"
+                           class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
                             <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
                         </a>
                     </div>
@@ -153,7 +153,7 @@ $message = '';
 
 
         <?php
-        if ($teacher_statut->approved == 'rejected') : ?>
+        if ($teacher_statut == 'rejected') : ?>
             <div class="min-h-screen bg-gray-100 flex items-center justify-center p-2">
                 <div class="bg-white shadow-xl rounded-2xl max-w-2xl w-full p-2 space-y-6">
                     <div class="text-center">
@@ -192,7 +192,7 @@ $message = '';
                 </div>
             </div>
 
-        <?php elseif ($teacher_statut->approved == 'pending') : ?>
+        <?php elseif ($teacher_statut== 'pending') : ?>
             <div class="min-h-screen bg-gray-100 flex items-center justify-center p-6">
                 <div class="bg-white shadow-xl rounded-2xl max-w-2xl w-full p-8 space-y-6">
                     <div class="text-center">

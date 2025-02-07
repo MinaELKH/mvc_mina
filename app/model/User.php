@@ -72,21 +72,39 @@ class User
     {
         $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
     }
-     private function save()
+    private function save()
     {
         $db = Database::getInstance()->getConnection();
         try {
-            $stmt = $db->prepare("INSERT INTO users (name_full, email, password, avatar , id_role) VALUES (:name_full, :email, :password, :avatar , :id_role)");
+            // Requête SQL avec RETURNING pour récupérer l'ID de l'enregistrement inséré
+            $stmt = $db->prepare("INSERT INTO users (name_full, email, password, avatar, id_role) 
+                              VALUES (:name_full, :email, :password, :avatar, :id_role)
+                              RETURNING id_user");
+
+            // Récupération de l'ID du rôle
             $id_role = role::get_IdRole_ByName($this->role);
-            $stmt->bindParam(':name_full', $this->name_full, PDO::PARAM_STR);
-            $stmt->bindParam(':email', $this->email, PDO::PARAM_STR);
-            $stmt->bindParam(':password', $this->passwordHash, PDO::PARAM_STR);
-            $stmt->bindParam(':avatar', $this->avatar, PDO::PARAM_STR);
-            $stmt->bindParam(':id_role', $id_role, PDO::PARAM_INT);
-           
+
+            // Liaison des paramètres avec bindValue
+            $stmt->bindValue(':name_full', $this->name_full, PDO::PARAM_STR);
+            $stmt->bindValue(':email', $this->email, PDO::PARAM_STR);
+            $stmt->bindValue(':password', $this->passwordHash, PDO::PARAM_STR);
+            $stmt->bindValue(':avatar', $this->avatar, PDO::PARAM_STR);
+            $stmt->bindValue(':id_role', $id_role, PDO::PARAM_INT);
+            var_dump($stmt);
+            // Exécution de la requête
             $stmt->execute();
-            $this->id_user = $db->lastInsertId();
-            return $this->id_user;
+
+            // Récupérer l'ID généré par PostgreSQL
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Vérifier si on a récupéré un résultat
+            if ($result) {
+                // L'ID de l'utilisateur inséré
+                $this->id_user = $result['id_user'];
+                return $this->id_user;
+            } else {
+                throw new Exception("Aucun utilisateur inséré. Impossible de récupérer l'ID.");
+            }
         } catch (PDOException $e) {
             // Log des erreurs SQL
             error_log("Database error: " . $e->getMessage());
@@ -121,6 +139,7 @@ class User
         }
         $user = new User(0, $name_full, $email, $role, $avatar);
         $user->setPasswordHash($password); // Hash the password
+
         return $user->save();
     }
     // Method to login (signin)

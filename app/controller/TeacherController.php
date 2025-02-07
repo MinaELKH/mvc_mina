@@ -6,7 +6,7 @@ use App\core\Controller;
 use App\config\DataBaseManager;
 use App\config\Session;
 use App\helper\uploadimage;
-use App\helpers\SweetAlert;
+use App\helper\SweetAlert;
 use App\model\Categorie;
 use App\model\ContentText;
 use App\model\ContentVideo;
@@ -16,308 +16,207 @@ use Exception;
 
 class TeacherController extends Controller
 {
-    private $dbManager; // Attribut de classe
-    private $newCourse;
-    private  $teacherId ;
-    private  $statut ;
-
+    private DataBaseManager $dbManager;
+    private int $teacherId;
+    private $statut;
 
     public function __construct()
     {
-        if (Session::isLoggedIn() && session::hasRole('teacher')) {
-            $this->dbManager = new DataBaseManager();
-            $this->newCourse = new Course( $this->dbManager ) ;
-            $s_userId = Session::get('user')['id'];
-            $this->teacherId =  $s_userId;
-            $newTeacher = new Teacher($this->dbManager, $this->teacherId);
-            $this->statut = $newTeacher->hasStatut();
-
-
-        } else {
+        if (!Session::isLoggedIn() || !Session::hasRole('teacher')) {
             SweetAlert::setMessage(
                 'Authentification requise ⚠️',
-                'Veuillez vous authentifier en tant qu enseignant pour  accéder a cette page.',
+                'Veuillez vous authentifier en tant qu\'enseignant pour accéder à cette page.',
                 'warning',
                 '../auth/login.php'
             );
+            exit;
         }
 
-
-
+        $this->dbManager = new DataBaseManager();
+        $this->teacherId = Session::get('user')['id'];
+        $this->statut = (new Teacher($this->dbManager, $this->teacherId))->getStatut() ;
     }
 
-    public function index() {
-
-        try {
-            $s_userId = Session::get('user')['id'];
-            $teacherId =  $s_userId;
-            $newTeacher = new Teacher($this->dbManager, $teacherId);
-            $statut = $newTeacher ->hasStatut();
-            // recuperation du courses
-            $courses = $this->newCourse->getMyCoursesTeacher($teacherId);
-
-            //statistique
-
-            $countCourses = $newTeacher->getCountCoursesByTeacher();
-            $countInscrits = $newTeacher->getCountInscritByTeacher();
-            $ca = $newTeacher->getCAByTeacher();
-            $topStudents = $newTeacher->getTopStudentbyTeacher();
-
-            $data = [
-                'statut' => $newTeacher->hasStatut(),
-                'countCourses' => $countCourses,
-                'countInscrits' => $countInscrits,
-                'topStudents' => $topStudents,
-                'ca' => $ca,
-                'courses' => $courses
-            ] ;
-
-//            var_dump($this->statut);
-//            die();
-            $this->view('espaceTeacher/mesCourses', $data);
-
-
-        } catch (Exception $e) {
-            // Log error and redirect or show error message
-            error_log($e->getMessage());
-            $courses = [];
-        }
-    }
-
-    
-    public function detailCourse($id_course)
+    public function index()
     {
-
+        try {
+            $teacher = new Teacher($this->dbManager, $this->teacherId);
+            $data = [
+                'statut' => $this->statut,
+                'countCourses' => $teacher->getCountCoursesByTeacher(),
+                'countInscrits' => $teacher->getCountInscritByTeacher(),
+                'topStudents' => $teacher->getTopStudentbyTeacher(),
+                'ca' => $teacher->getCAByTeacher(),
+                'courses' => (new Course($this->dbManager))->getMyCoursesTeacher($this->teacherId)
+            ];
+            $this->view('espaceTeacher/mesCourses', $data);
+        } catch (Exception $e) {
+            $this->handleException($e);
+        }
     }
-    public function Archive() {
+
+    public function Archive()
+    {
         try {
             $course = new Course($this->dbManager, $_POST['id_course']);
-            $result = $course->archive();
-            if ($result) {
-                SweetAlert::setMessage('Succès', 'Le cours a été archivé avec succès.', 'success', '');
-            } else {
-                SweetAlert::setMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter l\'administrateur.', 'error', '');
-            }
+            $course->archive();
+
+            $message = $course->archive() ? 'Le cours a été archivé avec succès.' : 'Aucun archivage n\'a eu lieu.';
+            SweetAlert::setMessage('Succès', $message, 'success',  '/mvc_mina/Teacher/');
         } catch (Exception $e) {
-            SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', '');
+            $this->handleException($e);
         }
     }
 
-
-
-    public function AjouterCourse() {
+    public function AjouterCourse()
+    {
         try {
-            // Validation des champs
-            if (empty($_POST['title'])) {
-                throw new Exception("Le titre du cours est obligatoire.");
-            }
-            if (empty($_POST['id_categorie'])) {
-                throw new Exception("La catégorie est obligatoire.");
-            }
+            $this->validateCourseData($_POST);
 
-
-            $uploadResult = uploadImage::uploadImage($_FILES['picture']);
-            $picture = $uploadResult['filePath'];
-            // Création du cours
+            $picture = uploadImage::uploadImage($_FILES['picture'])['filePath'];
             $newCourse = new Course(
-                $this->dbManager,
-                0,
-                $_POST['title'],
-                $_POST['description'],
-                $picture,
-                $this->teacherId, // Supposant que l'ID du professeur est dans la session
-                $_POST['id_categorie'],
-                Course::STATUS_PENDING,
-                0, //archive
-                $_POST['prix'],
-                $_POST['type']
+                $this->dbManager, 0, $_POST['title'], $_POST['description'], $picture,
+                $this->teacherId, $_POST['id_categorie'], Course::STATUS_PENDING, 0, $_POST['prix'], $_POST['type']
             );
 
-            $result = $newCourse->add();
+            if (!$newCourse->add()) {
+                throw new Exception("Échec de l'ajout du cours.");
+            }
+
             $id_course = $this->dbManager->getLastInsertId();
-            if ($result) {
+            $this->handleCourseContent($id_course, $_POST);
 
-                // Gestion du contenu en fonction du type
-                $type = $_POST['type'];
-
-                if ($type === 'video') {
-                    // Validation des champs spécifiques au type "Vidéo"
-
-
-                    if (!empty($_POST['videoURL'])) {
-                        $url= $_POST['videoURL'];
-                    } elseif (isset($_FILES['videoUpload'])) {
-                        $url = uploadVideo($_FILES['videoUpload']);
-
-                    }
-
-
-                    // Création du contenu vidéo
-                    $videoContent = new ContentVideo($this->dbManager);
-                    $videoContent->setCourseId($id_course);
-                    $videoContent->setTitle($_POST['title']);
-                    $videoContent->setUrl($url['filePath']);
-                    $videoContent->setDuration((int)$_POST['duration']);
-
-                    if (!$videoContent->add()) {
-                        throw new Exception("Échec de l'ajout du contenu vidéo.");
-                    }
-                } elseif ($type === 'texte') {
-                    // Validation des champs spécifiques au type "Texte"
-                    if (empty($_POST['content'])) {
-                        throw new Exception("Le contenu texte est obligatoire.");
-                    }
-
-                    // Création du contenu texte
-                    $textContent = new ContentText($this->dbManager);
-                    $textContent->setCourseId($id_course);
-                    $textContent->setTitle($_POST['title']);
-                    $textContent->setContent($_POST['content']);
-
-                    if (!$textContent->add()) {
-                        throw new Exception("Échec de l'ajout du contenu texte.");
-                    }
-                } else {
-                    throw new Exception("Type de contenu invalide.");
-                }
-
-                // Succès
-                setSweetAlertMessage('Succès', 'Le cours et son contenu ont été ajoutés avec succès', 'success', 'addCourse.php');
-            } else {
-                throw new Exception("Échec de l'ajout du contenue.");
-
-            }
+            SweetAlert::setMessage('Succès', 'Le cours et son contenu ont été ajoutés avec succès', 'success', '../teacher');
         } catch (Exception $e) {
-            setSweetAlertMessage('Erreur', $e->getMessage(), 'error', 'addCourse.php');
+            $this->handleException($e, 'addCourse.php');
         }
     }
 
-    public function viewAdd() {
-        $categories = Categorie::getAll($this->dbManager);
-        $data=['statut'=>$this->statut , 'categories'=>$categories]; ;
-        $this->view('espaceTeacher/addCourse' , $data);;
-
-
+    public function viewAdd()
+    {
+        $this->view('espaceTeacher/addCourse', ['statut' => $this->statut, 'categories' => Categorie::getAll($this->dbManager)]);
     }
 
-    public function viewUpdate($id) {
-       $this->view('espaceTeacher/updateCourse');
-        $id_course = $id;
-        if (!$id_course || !is_numeric($id_course)) {
-            die("ID de cours invalide ou manquant.");
+    public function viewUpdate($id)
+    {
+        if (!is_numeric($id)) {
+            die("ID de cours invalide.");
         }
-        $categories = Categorie::getAll($this->dbManager);
 
         try {
-            $newCourse = new Course($this->dbManager, $id_course);
-            $course = $newCourse->getById();
-            // echo "heelo";
-            // var_dump( $course->type) ;
-            // die();
-
+            $course = (new Course($this->dbManager, $id))->getById();
             if (!$course) {
-                throw new Exception("Le cours avec l'ID $id_course n'existe pas.");
-            } else {
-
-                if ($course->type == 'video') {
-                    $newContent = new ContentVideo($this->dbManager, 0, $id_course);
-                } elseif ($course->type == 'texte') {
-
-                    $newContent = new ContentText($this->dbManager, 0, $id_course);
-                }
-                $newContent = $newContent->getByIdCourse();
+                throw new Exception("Le cours avec l'ID $id n'existe pas.");
             }
 
-
-            $newTeacher = new Teacher($this->dbManager, $this->teacherId);
-            $data=[
-                'statut' => $newTeacher->hasStatut(),
-                'course' => $course,
-                'categories' => $categories,
+            $newContent = $this->getCourseContent($course);
+            $this->view('espaceTeacher/updateCourse', [
+                'statut' => $this->statut, 'course' => $course, 'categories' => Categorie::getAll($this->dbManager),
                 'newContent' => $newContent
-            ] ;
-
-            var_dump($this->statut);
-            die();
+            ]);
         } catch (Exception $e) {
-            // Gérer les erreurs
-            error_log($e->getMessage());
-            die("Erreur : Impossible de charger les données du cours.");
+            $this->handleException($e);
         }
-
     }
 
-
-    public function Update($id_course) {
+    public function ModifierCourse($id_course)
+    {
         try {
-            //rempli l objet
-            $newCourse->title = $_POST['title'];
-            $newCourse->description = $_POST['description'];
-            $newCourse->id_categorie = $_POST['id_categorie'];
-            $newCourse->prix = $_POST['prix'];
+            $course = new Course($this->dbManager, $id_course);
+            $existingContent = $this->getCourseContent($course);
 
-            // Gestion de l'image
+            $this->updateCourseData($course, $_POST);
+
+
             if (!empty($_FILES['picture']['name'])) {
-                $uploadedFile = uploadImage($_FILES['picture']); // fonction uploadImage() pour gérer les fichiers
-                if ($uploadedFile) {
-                    $newCourse->picture = $uploadedFile;
+                // Appelle la méthode uploadImage et stocke le résultat
+                $uploadResult = uploadImage::uploadImage($_FILES['picture']);
+
+                // Vérifie si l'upload a réussi
+                if ($uploadResult['success']) {
+                    // Assigne uniquement le chemin du fichier
+
+
+                    $course->picture = $uploadResult['filePath']; // <-- Assurez-vous de ne prendre que le chemin
+
                 } else {
-                    throw new Exception("Échec du téléchargement de l'image.");
+                    // Si l'upload échoue, affiche le message d'erreur
+                    SweetAlert::setMessage('Erreur', $uploadResult['message'], 'error');
+                    return; // Sortie de la fonction si erreur
                 }
             }
-            $newCourse->update() ;
-
-            $type = $_POST['type'];
-
-            if ($type === 'video') {
-                // Validation des champs spécifiques au type "Vidéo"
 
 
-                if (!empty($_POST['videoURL'])) {
-                    $url = $_POST['videoURL'];
-                } elseif (isset($_FILES['videoUpload'])) {
-                    $url = uploadVideo($_FILES['videoUpload']);
-                }
+            $course->update();
+            $this->updateCourseContent($existingContent, $_POST);
 
-
-                // Création du contenu vidéo
-                $videoContent = new ContentVideo($dbManager);
-                $videoContent->setContentId($id_content);
-                $videoContent->setCourseId($id_course);
-                $videoContent->setTitle($_POST['title']);
-                $videoContent->setUrl($url['filePath']);
-                $videoContent->setDuration((int)$_POST['duration']);
-
-                if (!$videoContent->update()) {
-                    throw new Exception("Échec de l'ajout du contenu vidéo.");
-                }
-            } elseif ($type === 'texte') {
-                //   var_dump($type);
-                //   die();
-                // Validation des champs spécifiques au type "Texte"
-                if (empty($_POST['content'])) {
-                    throw new Exception("Le contenu texte est obligatoire.");
-                }
-
-                // Création du contenu texte
-                $textContent = new ContentText($dbManager);
-                $textContent->setContentId($newContent->id_content);
-                $textContent->setCourseId($id_course);
-                $textContent->setTitle($_POST['title']);
-                $textContent->setContent($_POST['content']);
-
-                if (!$textContent->update()) {
-                    throw new Exception("Échec de l'ajout du contenu texte.");
-                }
-            } else {
-                throw new Exception("Type de contenu invalide.");
-            }
+            SweetAlert::setMessage('Succès', 'Le cours a été mis à jour avec succès.', 'success' , '');
         } catch (Exception $e) {
-            // Gérer les erreurs
-            setSweetAlertMessage('Erreur', htmlspecialchars($e->getMessage()), 'error', '');
+            $this->handleException($e);
         }
+    }
+
+    private function validateCourseData($data)
+    {
+        if (empty($data['title'])) throw new Exception("Le titre du cours est obligatoire.");
+        if (empty($data['id_categorie'])) throw new Exception("La catégorie est obligatoire.");
+    }
+
+    private function handleCourseContent($id_course, $data)
+    {
+        if ($data['type'] === 'video') {
+            $url = !empty($data['videoURL']) ? $data['videoURL'] : uploadVideo($_FILES['videoUpload'])['filePath'];
+            $videoContent = new ContentVideo($this->dbManager);
+            $videoContent->setCourseId($id_course);
+            $videoContent->setTitle($data['title']);
+            $videoContent->setUrl($url);
+            $videoContent->setDuration((int)$data['duration']);
+
+            if (!$videoContent->add()) throw new Exception("Échec de l'ajout du contenu vidéo.");
+        } elseif ($data['type'] === 'texte') {
+            if (empty($data['content'])) throw new Exception("Le contenu texte est obligatoire.");
+            $textContent = new ContentText($this->dbManager);
+            $textContent->setCourseId($id_course);
+            $textContent->setTitle($data['title']);
+            $textContent->setContent($data['content']);
+
+            if (!$textContent->add()) throw new Exception("Échec de l'ajout du contenu texte.");
+        } else {
+            throw new Exception("Type de contenu invalide.");
+        }
+    }
+
+    private function getCourseContent($course)
+    {
+        return $course->type === 'video'
+            ? (new ContentVideo($this->dbManager, 0, $course->id_course))->getByIdCourse()
+            : (new ContentText($this->dbManager, 0, $course->id_course))->getByIdCourse();
+    }
+
+    private function updateCourseData($course, $data)
+    {
+        $course->title = $data['title'];
+        $course->description = $data['description'];
+        $course->id_categorie = $data['id_categorie'];
+        $course->prix = $data['prix'];
+        $course->id_teacher = $this->teacherId;
+        $course->type = $data['type'];
+    }
+
+    private function updateCourseContent($content, $data)
+    {
+        if ($data['type'] === 'video') {
+            $content->setUrl(!empty($data['videoURL']) ? $data['videoURL'] : uploadVideo($_FILES['videoUpload'])['filePath']);
+            $content->setDuration((int)$data['duration']);
+        } elseif ($data['type'] === 'texte') {
+            $content->setContent($data['content']);
+        }
+        $content->update();
+    }
+
+    private function handleException(Exception $e, $redirect = '')
+    {
+        error_log($e->getMessage());
+        SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', $redirect);
     }
 }
-
-
-

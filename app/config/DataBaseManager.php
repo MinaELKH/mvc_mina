@@ -49,29 +49,38 @@ class DataBaseManager
     }
 
 
-    public function update(string $table, array $data, string $whereColumn, $whereValue): bool 
+    public function update(string $table, array $data, string $whereColumn, $whereValue): bool
     {
         $setColumns = [];
         foreach ($data as $column => $value) {
-            $setColumns[] = "$column = :$column";
+            $setColumns[] = "\"$column\" = :$column"; // Ajout de guillemets pour PostgreSQL
         }
+
         $setClause = implode(", ", $setColumns);
-        $query = "UPDATE $table SET $setClause WHERE $whereColumn = :whereValue";
+        $query = "UPDATE \"$table\" SET $setClause WHERE \"$whereColumn\" = :whereValue";
+
         $stmt = $this->connection->prepare($query);
+
+        // Liaison des valeurs en évitant bindParam
         foreach ($data as $column => $value) {
-            $stmt->bindParam(":$column", $data[$column]);
+            $stmt->bindValue(":$column", $value); // bindValue au lieu de bindParam
         }
-        $stmt->bindParam(":whereValue", $whereValue);
+        $stmt->bindValue(":whereValue", $whereValue);
 
-      
-      $stmt->execute();
+        // Affichage de la requête générée avec les valeurs
+//        $finalQuery = $query;
+//        foreach ($data as $column => $value) {
+//            $finalQuery = str_replace(":$column", "'" . addslashes($value) . "'", $finalQuery);
+//        }
+//        $finalQuery = str_replace(":whereValue", "'" . addslashes($whereValue) . "'", $finalQuery);
+//        echo "Query exécutée : " . $finalQuery . "\n";
+//
+//        echo "hlp";
+        $stmt->execute();
 
-        if ($stmt->rowCount() > 0) {
-            return true; 
-        } else {
-            return false; 
-        }
+        return ($stmt->rowCount() > 0); // Retourne vrai si des lignes ont été mises à jour
     }
+
     public function selectAll(string $table)
     {
         $query = "SELECT * FROM $table where archived = FALSE  ";

@@ -40,7 +40,7 @@
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="register/register" enctype="multipart/form-data" class="space-y-4">
+            <form method="POST" action="../Auth/register" enctype="multipart/form-data" class="space-y-4">
                 <!-- Name Input -->
                 <div>
                     <label for="name" class="block text-white text-sm font-medium mb-1">Nom complet</label>

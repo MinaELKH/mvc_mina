@@ -29,7 +29,7 @@ if (Session::isLoggedIn()) {
                     <img
                                 alt="<?= htmlspecialchars($course->title); ?>"
                                 class="w-full h-32 object-cover"
-                                src="<?php echo  '../'.$course->picture ?: 'https://storage.googleapis.com/a1aa/image/noC8xPRPcuBWd_C1xQmYNlvvgBKWFaAuuJPWmdQmvPM.jpg'; ?>" />
+                                src="<?php echo '/mvc_mina/public/' . $course->picture  ?: 'https://storage.googleapis.com/a1aa/image/noC8xPRPcuBWd_C1xQmYNlvvgBKWFaAuuJPWmdQmvPM.jpg'; ?>" />
                             
                         <div class="absolute top-2 right-2 bg-blue-500 text-white px-1.5 py-0.5 rounded-full text-[10px]">
                             En cours

@@ -49,7 +49,7 @@ if (empty($data['courses'])): ?>
                     <img
                         alt="<?= htmlspecialchars($course->title); ?>"
                         class="w-full h-32 object-cover"
-                        src="<?php echo  'http://localhost/mvc_mina/public/'.$course->picture ?: 'https://storage.googleapis.com/a1aa/image/noC8xPRPcuBWd_C1xQmYNlvvgBKWFaAuuJPWmdQmvPM.jpg'; ?>" />
+                        src="<?php echo '/mvc_mina/public/' . $course->picture  ?: 'https://storage.googleapis.com/a1aa/image/noC8xPRPcuBWd_C1xQmYNlvvgBKWFaAuuJPWmdQmvPM.jpg'; ?>" />
                     <!-- Icône de favoris -->
                     <i class="fas fa-heart text-white absolute top-2 right-2 bg-yellow-500 p-1 rounded-full"></i>
                 </div>

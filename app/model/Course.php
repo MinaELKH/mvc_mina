@@ -16,7 +16,7 @@ class Course
     private ?int $id_categorie;
     private ?string $status;
     private ?string $type;
-    private ?int $archived;
+    private ?bool $archived;
     private ?float $prix;
 
     // Constantes pour le statut
@@ -27,16 +27,16 @@ class Course
 
     public function __construct(
         ?DataBaseManager $db,
-        ?int $id_course = 0,
-        ?string $title = null,
-        ?string $description = null,
-        ?string $picture = null,
-        ?int $id_teacher = null,
-        ?int $id_categorie = null,
-        ?string $status = self::STATUS_PENDING,
-        ?int $archived = 0,
-        ?float $prix = null,
-        ?string $type = null,
+        ?int             $id_course = 0,
+        ?string          $title = null,
+        ?string          $description = null,
+        ?string          $picture = null,
+        ?int             $id_teacher = null,
+        ?int             $id_categorie = null,
+        ?string          $status = self::STATUS_PENDING,
+        bool             $archived = false,
+        ?float           $prix = null,
+        ?string          $type = null,
     ) {
 
         $this->db = $db;
@@ -81,6 +81,8 @@ class Course
     }
     public function update(): bool
     {
+
+
         // Préparer les données pour la mise à jour
         $data = [
             "title" => $this->title,
@@ -89,7 +91,6 @@ class Course
             "prix" => $this->prix,
             "picture" => $this->picture,
             "status" => $this->status,
-            "archived" => $this->archived,
             "id_teacher" => $this->id_teacher,
             "type" => $this->type,
         ];
@@ -120,7 +121,7 @@ class Course
     public function getById()
     {
         $result = $this->db->selectBy("courses", ["id_course" => $this->id_course]);
-        // var_dump($result);  
+        //var_dump($result);
         if (!empty($result)) {
             $this->convert_array_to_objet($result[0]); // converti array to objet 
             return $this;  // je return l ojbet rempli 
@@ -189,7 +190,7 @@ class Course
     // affiche course teacher
     public function getMyCoursesTeacher( $id_teacher): array
     {
-        return $this->db->selectBy("viewcourses", ["id_teacher" => $id_teacher]);
+        return $this->db->selectBy("viewcourses", ["id_teacher" => $id_teacher , "archived" => 0 ]);
     }
     public static function getSearch($db , $MotSearch): ?array
     {
