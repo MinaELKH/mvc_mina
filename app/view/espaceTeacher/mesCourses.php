@@ -1,76 +1,27 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("../sweetAlert.php");
+
 ob_start();
 
-use classes\Course;
-use classes\CourseTags;
-use classes\Review;
-use config\DataBaseManager;
-use classes\ContentText;
-use classes\ContentVideo;
-use classes\Teacher;
+use App\helpers\SweetAlert;
 use config\session;
 
-session::start();
-if (Session::isLoggedIn() && session::hasRole('teacher')) {
-    // Récupérer les données de session
-    $s_userId = Session::get('user')['id'];
-    $s_userName = Session::get('user')['name'];
-    $s_userEmail = Session::get('user')['email'];
-    $s_userRole = Session::get('user')['role'];
-    $s_userAvatar = Session::get('user')['avatar'];
-} else {
-    setSweetAlertMessage(
-        'Authentification requise ⚠️',
-        'Veuillez vous authentifier en tant qu enseignant pour  accéder a cette page.',
-        'warning',
-        '../auth/login.php'
-    );
-}
 // affichage 
-try {
-    $dbManager = new DataBaseManager();
-    $teacherId =  $s_userId;
-    $newTeacher = new Teacher($dbManager, $teacherId);
 
-
-    // recuperation du courses 
-
-
-    $courses = $newTeacher->getMyCourses();
-
-
-
-    //statistique 
-
-        $countCourses = $newTeacher->getCountCoursesByTeacher();
-        $countInscrits = $newTeacher->getCountInscritByTeacher();
-        $ca = $newTeacher->getCAByTeacher();
-        $topStudents = $newTeacher->getTopStudentbyTeacher();
-
-
-
-} catch (Exception $e) {
-    // Log error and redirect or show error message
-    error_log($e->getMessage());
-    $courses = [];
-}
 // Archivage d'un cours
-if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
-    try {
-        $course = new Course($dbManager, $_POST['id_course']);
-        $result = $course->archive();
-
-        if ($result) {
-            setSweetAlertMessage('Succès', 'Le cours a été archivé avec succès.', 'success', '');
-        } else {
-            setSweetAlertMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter l\'administrateur.', 'error', '');
-        }
-    } catch (Exception $e) {
-        setSweetAlertMessage('Erreur', $e->getMessage(), 'error', '');
-    }
-}
+//if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
+//    try {
+//        $course = new Course($dbManager, $_POST['id_course']);
+//        $result = $course->archive();
+//
+//        if ($result) {
+//            setSweetAlertMessage('Succès', 'Le cours a été archivé avec succès.', 'success', '');
+//        } else {
+//            setSweetAlertMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter l\'administrateur.', 'error', '');
+//        }
+//    } catch (Exception $e) {
+//        setSweetAlertMessage('Erreur', $e->getMessage(), 'error', '');
+//    }
+//}
 
 
 
@@ -91,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
             </div>
             <div>
                 <h3 class="text-gray-500 text-sm">Nombre de Cours</h3>
-                <p class="text-xl font-bold text-gray-800"><?= $countCourses ?></p>
+                <p class="text-xl font-bold text-gray-800"><?= $data['countCourses'] ?></p>
             </div>
         </div>
 
@@ -104,7 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
             </div>
             <div>
                 <h3 class="text-gray-500 text-sm">Total Inscrits</h3>
-                <p class="text-xl font-bold text-gray-800"><?= $countInscrits ?></p>
+                <p class="text-xl font-bold text-gray-800"><?= $data['countInscrits'] ?></p>
             </div>
         </div>
 
@@ -117,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
             </div>
             <div>
                 <h3 class="text-gray-500 text-sm">Chiffre d'Affaires</h3>
-                <p class="text-xl font-bold text-gray-800"><?= number_format($ca, 0, ',', ' ') ?> €</p>
+                <p class="text-xl font-bold text-gray-800"><?= number_format($data['ca'], 0, ',', ' ') ?> €</p>
             </div>
         </div>
 
@@ -130,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
             </div>
             <div>
                 <h3 class="text-gray-500 text-sm">Top Étudiant</h3>
-                <p class="text-sm font-bold text-gray-800"><?= $topStudents ?></p>
+                <p class="text-sm font-bold text-gray-800"><?= $data['topStudents'] ?></p>
             </div>
         </div>
     </div>
@@ -146,7 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
         <a href="/courses" class="text-sm text-blue-600 hover:underline">Voir tous les cours</a>
     </div>
 
-    <?php if (empty($courses)): ?>
+    <?php if (empty($data['courses'])): ?>
         <div class="text-center py-10 bg-gray-100 rounded-lg">
             <p class="text-gray-500">Vous n'avez pas encore de cours en cours.</p>
             <a href="/create-course" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
@@ -158,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
 
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            <?php foreach ($courses as $course): ?>
+            <?php foreach ($data['courses'] as $course): ?>
 
                 <div class="bg-white rounded-md shadow-sm overflow-hidden relative group">
                     <a href="detailCourse.php?id_course=<?= htmlspecialchars($course->id_course); ?>" class="block">
@@ -167,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
                             <img
                                 alt="<?= htmlspecialchars($course->title); ?>"
                                 class="w-full h-32 object-cover"
-                                src="<?php echo '../' . $course->picture ?: 'https://via.placeholder.com/300x200.png?text=Image+Non+Disponible'; ?>" />
+                                src="<?php echo '/mvc_mina/public/' . $course->picture ?: 'https://via.placeholder.com/300x200.png?text=Image+Non+Disponible'; ?>" />
                             <!-- Icône de favoris -->
                             <i class="fas fa-heart text-white absolute top-2 right-2 bg-yellow-500 p-1 rounded-full"></i>
                         </div>
@@ -177,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
                                 <img
                                     alt="Profile picture of <?= htmlspecialchars($course->teacher_name); ?>"
                                     class="w-6 h-6 rounded-full mr-2"
-                                    src="<?php echo '../' . ($course->avatar ?: 'https://via.placeholder.com/100.png?text=Avatar'); ?>" />
+                                    src="<?php echo '/mvc_mina/public/' . ($course->avatar ?: 'https://via.placeholder.com/100.png?text=Avatar'); ?>" />
                                 <span class="font-semibold">
                                     <?= htmlspecialchars($course->teacher_name); ?>
                                 </span>
@@ -204,22 +155,6 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
                                     <!-- <?= htmlspecialchars($course->rating); ?> -->
                                 </span>
                             </div>
-                            <!-- Tags -->
-                            <div class="flex space-x-2 mt-2">
-                                <?php
-                                $newtag = new CourseTags($dbManager, $course->id_course);
-                                $result = $newtag->getTagsBycourse();
-
-                                // Couleur 
-                                $colors = ['bg-blue-100', 'bg-green-100', 'bg-red-100', 'bg-yellow-100', 'bg-purple-100', 'bg-pink-100', 'bg-indigo-100', 'bg-teal-100', 'bg-orange-100', 'bg-gray-100'];
-
-                                foreach ($result as $index => $Objet_tag) {
-                                    // Sélectionner une couleur en fonction de l'index du tag
-                                    $colorClass = $colors[$index % count($colors)];
-                                    echo '<span class="' . $colorClass . '  text-xs text-gray-700 px-1 py-1 rounded-full">' . $Objet_tag->name_tag . '</span>';
-                                }
-                                ?>
-                            </div>
 
 
                             <!-- Prix et bouton -->
@@ -229,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["archive"])) {
 
                     <div class="absolute top-2 right-2 flex space-x-1 opacity-100 group-hover:opacity-50 transition-opacity">
                         <!-- Icône d'archivage -->
-                        <form action="" method="post" class="inline-block">
+                        <form action="<?= BASE_URL . "\Teacher\Archive" ?>" method="post" class="inline-block">
                             <input type="hidden" name="id_course" value="<?= htmlspecialchars($course->id_course); ?>">
                             <button name="archive" class="bg-gray-200/50 rounded-full p-1 hover:bg-gray-300/70">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">

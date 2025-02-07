@@ -1,11 +1,6 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("../sweetAlert.php");
 
-use classes\Role;
-use classes\Teacher;
-use config\DataBaseManager;
-use config\session;
+use App\config\session;
 
 session::start();
 if (Session::isLoggedIn() && session::hasRole('teacher')) {
@@ -15,18 +10,11 @@ if (Session::isLoggedIn() && session::hasRole('teacher')) {
     $s_userEmail = Session::get('user')['email'];
     $s_userRole = Session::get('user')['role'];
     $s_userAvatar = Session::get('user')['avatar'];
-} else {
-    setSweetAlertMessage(
-        'Authentification requise ⚠️',
-        'Veuillez vous authentifier en tant qu enseignant pour  accéder a cette page.',
-        'warning',
-        '../auth/login.php'
-    );
-}
+} ;
 
-$dbManager = new DatabaseManager();
-$teacher = new Teacher($dbManager, $s_userId);
-$teacher_statut = $teacher->hasStatut();
+
+
+$teacher_statut = $data['statut'];
 $message = '';
 
 
@@ -101,7 +89,7 @@ $message = '';
                     class="text-gray-700 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Mes Cours
                 </a>
-                <a href="addCourse.php"
+                <a href="teacher/viewAdd"
                     class="text-gray-700 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                     Ajouter un nouveau cours
                 </a>

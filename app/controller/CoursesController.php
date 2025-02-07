@@ -13,7 +13,7 @@ use Exception;
 
 class CoursesController extends Controller
 {
-    private $this->dbManager; // Attribut de classe
+    private $dbManager; // Attribut de classe
     private $newCourse;
     public function __construct()
     {

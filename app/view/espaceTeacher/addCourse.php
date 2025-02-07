@@ -1,18 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("../sweetAlert.php");
-require_once("../uploadimage.php");
-
-use classes\Course;
-use classes\Categorie;
-use classes\ContentText;
-use classes\ContentVideo;
-use config\DataBaseManager;
-use classes\Tag;
-use classes\CourseTags;
-use config\session;
-
-
+use App\config\session;
 ob_start();
 
 session::start();
@@ -24,26 +11,11 @@ if (Session::isLoggedIn() && session::hasRole('teacher')) {
     $s_userRole = Session::get('user')['role'];
     $s_userAvatar = Session::get('user')['avatar'];
     //  var_dump($userAvatar); 
-} else {
-    setSweetAlertMessage(
-        'Authentification requise ⚠️',
-        'Veuillez vous authentifier en tant qu enseignant pour  accéder a cette page.',
-        'warning',
-        '../auth/login.php'
-    );
 }
-
-
-
-
-
-
-
-$dbManager = new DatabaseManager();
 
 // Récupérer les catégories pour le select
 
-$categories = Categorie::getAll($dbManager);
+
 
 
 // Ajout de cours
@@ -77,36 +49,6 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["add_course"])) {
 
        $result = $newCourse->add();
        $id_course = $dbManager->getLastInsertId();
-
-        // echo("id_course") ; 
-        // var_dump($id_course);
-   
-        // if ($result) {
-         
-        //   if (!empty($_POST['tags'])) {
-            
-        //     $tags_input = htmlspecialchars(trim($_POST['tags']));
-        //     $tags = array_unique(array_filter(array_map('trim', explode(',', $tags_input))));
-    
-        //     foreach ($tags as $tag_name) {
-               
-        //       $tag = new Tag($dbManager, 0, $tag_name);
-        //       // Vérifier si le tag existe
-        //       $objetTag = $tag->getTagByName();
-        //       var_dump($objetTag );
-        //       die();
-        //       if ($objetTag != null) {
-        //         $tag_id = $objetTag->id_tag;
-        //       }
-    
-        //       // Ajouter la relation entre l'course et le tag
-        //       $tag_course = new courseTags($dbManager, $id_course, $tag_id);
-        //       $tag_course->linkTagTocourse();
-        //     }
-        //   } 
-        // }
-
-        
         if ($result) {
             
             // Gestion du contenu en fonction du type
@@ -170,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["add_course"])) {
         <div class="p-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">Ajouter un Nouveau Cours</h2>
 
-            <form method="POST" action="" enctype="multipart/form-data" class="space-y-6" id="courseForm">
+            <form method="POST" action= <?php echo BASE_URL ."/teacher/AjouterCourse"?> enctype="multipart/form-data" class="space-y-6" id="courseForm">
                 <!-- Titre du Cours -->
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
@@ -208,7 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["add_course"])) {
                         name="id_categorie"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Sélectionnez une catégorie</option>
-                        <?php foreach ($categories as $categorie): ?>
+                        <?php foreach ($data['categories'] as $categorie): ?>
                             <option value="<?= $categorie->id_categorie ?>">
                                 <?= htmlspecialchars($categorie->name) ?>
                             </option>
@@ -269,38 +211,14 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["add_course"])) {
                     <input id="tags" name="tags" placeholder="Tapez pour ajouter des tags" class="w-full p-2 border border-gray-300 rounded-md">
                 </div> -->
 
-                <?php
-               
-                $tags = Tag::getAll($dbManager);
-                $tagsArray = array_map(function ($tag) {
-                    return $tag->name_tag;
-                }, $tags);
-                // Convertir les tags en format JSON pour les utiliser dans JavaScript
-                echo '<script>';
-                echo 'var tagsList = ' . json_encode($tagsArray) . ';';
-                echo '</script>';
-                ?>
+
 
 
 
 
 
              <!-- utlisation de tagify pour recupere les tags  -->
-                <script>
-                    var input = document.querySelector('input[name=tags]');
-
-                    // Initialiser Tagify avec la liste des tags récupérés depuis la base de données
-                    var tagify = new Tagify(input, {
-                        whitelist: tagsList, // Remplir le whitelist avec les tags récupérés
-                        maxTags: 5, // Limite du nombre de tags que l'utilisateur peut ajouter
-                        dropdown: {
-                            enabled: 1, // Montre les suggestions immédiatement
-                            maxItems: 10, // Nombre d'éléments à afficher dans le menu de suggestions
-                            classname: 'tags-look', // Classe personnalisée pour le style
-                            searchKeys: ['name'], // Recherche par nom
-                        }
-                    });
-                </script>
+       
 
                 <div id="textFields" class="hidden">
                     <div>

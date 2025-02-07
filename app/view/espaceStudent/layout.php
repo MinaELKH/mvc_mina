@@ -1,10 +1,6 @@
 <?php
-
-
 use App\helpers\SweetAlert;
 use App\config\session;
-
-
 if (Session::isLoggedIn() && session::hasRole('student')) {
     // Récupérer les données de session
     $s_userId = Session::get('user')['id'];
@@ -13,14 +9,8 @@ if (Session::isLoggedIn() && session::hasRole('student')) {
     $userRole = Session::get('user')['role'];
     $userAvatar = Session::get('user')['avatar'];
     //  var_dump($userAvatar); 
-} else {
-    SweetAlert::setMessage(
-        'Authentification requise ⚠️',
-        'Veuillez vous authentifier pour accéder cette page.',
-        'warning',
-        '../auth/login.php'
-    );
 }
+
 ?>
 
 
@@ -125,7 +115,7 @@ if (Session::isLoggedIn() && session::hasRole('student')) {
                                 <i class="fas fa-cog mr-2"></i> Paramètres
                             </a>
                             <div class="border-t my-1"></div>
-                            <a href="../auth/logout.php" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
+                            <a href="Auth/deconnexion" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
                             </a>
                         </div>

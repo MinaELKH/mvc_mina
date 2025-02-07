@@ -48,7 +48,7 @@ $error = ''; // Initialize error message variable
                 </div>
             <?php endif; ?>
 
-            <form method="POST" class="space-y-6" action="login/authentification">
+            <form method="POST" class="space-y-6" action= <?php echo BASE_URL ."/auth/authentification"?>>
                 <!-- Email Input -->
                 <div>
                     <label for="email" class="block text-white text-sm font-medium mb-2">Email</label>

@@ -186,7 +186,11 @@ class Course
         ];
         return $db->selectBy("viewcourses", $params);
     }
-
+    // affiche course teacher
+    public function getMyCoursesTeacher( $id_teacher): array
+    {
+        return $this->db->selectBy("viewcourses", ["id_teacher" => $id_teacher]);
+    }
     public static function getSearch($db , $MotSearch): ?array
     {
         $query = "SELECT DISTINCT 

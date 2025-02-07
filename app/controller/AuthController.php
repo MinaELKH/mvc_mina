@@ -58,10 +58,11 @@ class AuthController extends Controller
             ]);
              $role = $user->getRole();
             if ($role == "student") {
-                header("Location: ../../home");
+
+                header('Location: '.BASE_URL.'/home');
                 exit();
             } elseif ($role == "teacher") {
-                header('Location:  ../../espaceTeacher/mesCourses.php');
+                header('Location:  '.BASE_URL.'/teacher');
                 exit();
             }  elseif ($role == "admin") {
 
@@ -75,9 +76,6 @@ class AuthController extends Controller
             SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', '');
         }
     }
-
-
-
     public function deconnexion(){
 
         Session::destroy();

@@ -1,3 +1,3 @@
 <?php
 
-define('BASE_URL', 'http://localhost/mvc_mina/');
+define('BASE_URL', '/mvc_mina');
