@@ -67,13 +67,15 @@ class CategorieController extends Controller
         try {
             $newCategorie = new Categorie($this->dbManager, $_POST['id_categorie']);
             $result = $newCategorie->archived();
+
             if ($result) {
-                SweetAlert::setMessage('Succès', 'Categorie archivée avec succès.', 'success', 'categorie.php');
+                SweetAlert::setMessage('Succès', 'Catégorie archivée avec succès.', 'success', BASE_URL . "/categorie");
             } else {
-                SweetAlert::setMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter le superAdmin', 'error', 'categorie.php');
+                SweetAlert::setMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter le superAdmin', 'error', BASE_URL . "/categorie");
             }
         } catch (Exception $e) {
-            SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', 'categorie.php');
+            SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', BASE_URL . "/categorie");
         }
     }
+
 }

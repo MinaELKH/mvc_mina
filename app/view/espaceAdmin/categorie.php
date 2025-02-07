@@ -41,22 +41,23 @@ function afficher($data)
             foreach ($data['categories'] as $objet) {
 
                 echo "<tr class='border-b border-gray-100 hover:bg-blue-50/50 transition duration-300'>
-                        <td class='px-6 py-4 text-gray-800'>{$objet->id_categorie}</td>
-                        <td class='px-6 py-4'>
-                            <div class='font-semibold text-gray-900'>{$objet->name}</div>
-                        </td>
-                        <td class='px-6 py-4 text-gray-600'>{$objet->description}</td>
-                        <td class='px-6 py-4 text-center'>
-                            <form action="/mvc_mina/categorie/archive" method='post' class='flex justify-center'>
-                                <input type='hidden' name='id_categorie' value='{$objet->id_categorie}'>
-                                <button type='submit' name='archive' value='{$objet->id_categorie}' 
-                                    class='text-red-500 hover:text-red-700 transform hover:scale-125 transition'
-                                    title='Archiver la catégorie'>
-                                    <i class='fas fa-archive'></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>";
+        <td class='px-6 py-4 text-gray-800'>{$objet->id_categorie}</td>
+        <td class='px-6 py-4'>
+            <div class='font-semibold text-gray-900'>{$objet->name}</div>
+        </td>
+        <td class='px-6 py-4 text-gray-600'>{$objet->description}</td>
+        <td class='px-6 py-4 text-center'>
+            <form action='/mvc_mina/categorie/archive' method='post' class='flex justify-center'>
+                <input type='hidden' name='id_categorie' value='" . htmlspecialchars($objet->id_categorie) . "'>
+                <button type='submit' name='archive' value='" . htmlspecialchars($objet->id_categorie) . "'
+                        class='text-red-500 hover:text-red-700 transform hover:scale-125 transition'
+                        title='Archiver la catégorie'>
+                    <i class='fas fa-archive'></i>
+                </button>
+            </form>
+        </td>
+      </tr>";
+
             }
             echo "</tbody>
                 </table>";
