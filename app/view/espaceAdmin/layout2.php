@@ -1,10 +1,10 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("../sweetAlert.php");
+//require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
+//require_once("../sweetAlert.php");
 
-use config\session;
-use classes\Role;
-
+//use App\config\session;
+//use classes\Role;
+/*
 session::start();
 if (Session::isLoggedIn() && session::hasRole('admin')) {
     // Récupérer les données de session
@@ -21,7 +21,7 @@ if (Session::isLoggedIn() && session::hasRole('admin')) {
         'warning',
         '../auth/login.php'
     );
-}
+} */
 ?>
 
 
@@ -113,7 +113,7 @@ if (Session::isLoggedIn() && session::hasRole('admin')) {
                 </span>
             </a>
             <!-- Catégories -->
-            <a href="categorie.php" class="group relative flex items-center justify-center py-3 px-4 rounded-lg transition duration-300 hover:bg-white/20 hover:scale-105">
+            <a href="categorie1.php" class="group relative flex items-center justify-center py-3 px-4 rounded-lg transition duration-300 hover:bg-white/20 hover:scale-105">
                 <div class="absolute inset-0 bg-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <i class="fas fa-layer-group text-white text-xl relative z-10 transform group-hover:rotate-12"></i>
             </a>
@@ -182,7 +182,7 @@ if (Session::isLoggedIn() && session::hasRole('admin')) {
                         <!-- la partie qui se change selon user  -->
 
                         <div class="flex items-center space-x-4 relative">
-                            <?php if (Session::isLoggedIn()) : ?>
+                            <?php //if (Session::isLoggedIn()) : ?>
                                 <div class="flex items-center space-x-4">
                                     <!-- Notifications -->
                                     <div class="relative">
@@ -202,7 +202,7 @@ if (Session::isLoggedIn() && session::hasRole('admin')) {
                                                 alt="Profil"
                                                 class="w-10 h-10 rounded-full mr-3">
                                             <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-gray-700"><?= $s_userName ?></span>
+                                                <span class="text-sm font-medium text-gray-700"><?php //$s_userName ?></span>
                                                 <span class="text-xs text-yellow-500">
                                                     Administrateur 
                                                 </span>
@@ -227,7 +227,7 @@ if (Session::isLoggedIn() && session::hasRole('admin')) {
                                         </div>
                                     </div>
                                 </div>
-                            <?php endif; ?>
+                            <?//php endif; ?>
                         </div>
 
                         <!-- Include Alpine.js for interactivity -->

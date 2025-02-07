@@ -2,8 +2,10 @@
 
 namespace App\controller;
 
+use App\config\Session;
 use App\core\Controller;
 use App\config\DataBaseManager;
+use App\helper\SweetAlert;
 use App\model\Categorie;
 
 class CategorieController extends Controller
@@ -12,25 +14,53 @@ class CategorieController extends Controller
 
     public function __construct()
     {
-        $this->dbManager = new DataBaseManager(); // Initialisation une seule fois
+
+        if (Session::isLoggedIn() && session::hasRole('admin')) {
+            // Récupérer les données de session
+            $s_userId = Session::get('user')['id'];
+            $s_userName = Session::get('user')['name'];
+            $s_userEmail = Session::get('user')['email'];
+            $s_userRole = Session::get('user')['role'];
+            $s_userAvatar = Session::get('user')['avatar'];
+            $this->dbManager = new DataBaseManager();
+        } else {
+            SweetAlert::setMessage(
+                'Authentification requise ⚠️',
+                'Veuillez vous authentifier en tant qu admin pour  accéder a cette page.',
+                'warning',
+                '../auth/login'
+            );
+        }
+
+         // Initialisation une seule fois
     }
 
     public function index() {
         $categories = $this->dbManager->selectAll('categories');
-        $this->view('epaceAdmin/categorie', ['categories' => $categories]);
+        $this->view('espaceAdmin/categorie', ['categories' => $categories]);
     }
 
     public function affiche($arg) {
         $newCategorie = new Categorie($this->dbManager, $arg);
         $data = ['id_categorie' => $arg];
         $result = $this->dbManager->selectBy('categories', $data);
-        $this->view('epaceAdmin/categorie', $arg);
+        if ($result) {
+            header("Location: " . BASE_URL . "/categorie");
+            exit; // IMPORTANT : Arrête le script après la redirection
+        } else {
+            $this->view('../espaceAdmin/categorie', $result);
+        }
     }
 
     public function Ajouter() {
         $newCategorie = new Categorie($this->dbManager, 0, $_POST['name'], $_POST['description']);
         $result = $newCategorie->add();
-        $this->view('epaceAdmin/categorie', $result);
+        if ($result) {
+            header("Location: " . BASE_URL . "/categorie");
+            exit; // IMPORTANT : Arrête le script après la redirection
+        } else {
+            $this->view('../espaceAdmin/categorie', $result);
+        }
     }
 
     public function Archive() {
@@ -38,12 +68,12 @@ class CategorieController extends Controller
             $newCategorie = new Categorie($this->dbManager, $_POST['id_categorie']);
             $result = $newCategorie->archived();
             if ($result) {
-                setSweetAlertMessage('Succès', 'Categorie archivée avec succès.', 'success', 'categorie.php');
+                SweetAlert::setMessage('Succès', 'Categorie archivée avec succès.', 'success', 'categorie.php');
             } else {
-                setSweetAlertMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter le superAdmin', 'error', 'categorie.php');
+                SweetAlert::setMessage('Erreur', 'Aucun archivage n\'a eu lieu. Veuillez contacter le superAdmin', 'error', 'categorie.php');
             }
         } catch (Exception $e) {
-            setSweetAlertMessage('Erreur', $e->getMessage(), 'error', 'categorie.php');
+            SweetAlert::setMessage('Erreur', $e->getMessage(), 'error', 'categorie.php');
         }
     }
 }

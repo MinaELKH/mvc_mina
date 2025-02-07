@@ -201,5 +201,5 @@ if ($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST["status"])) {
 
 <?php
 $content = ob_get_clean();
-include('layout1.php');
+include('layout.php');
 ?>

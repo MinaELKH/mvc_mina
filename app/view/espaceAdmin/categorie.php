@@ -1,6 +1,5 @@
 <?php
-//require_once $_SERVER['DOCUMENT_ROOT'] . '/youdemy/autoloader.php';
-require_once("sweetAlert.php");
+
 ob_start();
 
 use classes\Categorie;
@@ -48,7 +47,7 @@ function afficher($data)
                         </td>
                         <td class='px-6 py-4 text-gray-600'>{$objet->description}</td>
                         <td class='px-6 py-4 text-center'>
-                            <form action='' method='post' class='flex justify-center'>
+                            <form action="/mvc_mina/categorie/archive" method='post' class='flex justify-center'>
                                 <input type='hidden' name='id_categorie' value='{$objet->id_categorie}'>
                                 <button type='submit' name='archive' value='{$objet->id_categorie}' 
                                     class='text-red-500 hover:text-red-700 transform hover:scale-125 transition'
@@ -144,5 +143,5 @@ function afficher($data)
 
 <?php
 $content = ob_get_clean();
-include('layout1.php');
+include('layout.php');
 ?>

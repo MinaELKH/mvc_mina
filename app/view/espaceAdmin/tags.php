@@ -179,5 +179,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <?php
 $content = ob_get_clean();
-include('layout1.php');
+include('layout.php');
 ?>

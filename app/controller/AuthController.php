@@ -92,7 +92,7 @@ class AuthController extends Controller
                 exit();
             }  elseif ($role == "admin") {
 
-                header('Location:  ../../espaceAdmin/dashboard.php');
+                header('Location:  '.BASE_URL.'/categorie');
                 exit();
             }
 
@@ -141,7 +141,7 @@ class AuthController extends Controller
                 exit();
             }  elseif ($role == "admin") {
 
-                header('Location:  ../../espaceAdmin/dashboard.php');
+                header('Location:  '.BASE_URL.'/categorie');
                 exit();
             }
 
