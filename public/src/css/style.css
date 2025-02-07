@@ -1,0 +1,50 @@
+.custom-sweetalert {
+    width: '100px'; 
+    height: '70px';
+    padding: '2px'; 
+    font-size: '8px';
+    color: red ;
+    border-radius: 10px; /* Coins arrondis */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Ombre légère */
+}
+
+
+table{
+    background:#fff;
+    opacity: 0.8;
+    width:95% ;
+    border-collapse : collapse ; 
+    text-align : left ;
+}
+
+thead{
+    background-color:#f3f4f6; ;
+}
+
+th , td {
+    padding: 12px;
+    border : 1px  solid #d1d5db ; 
+}
+tbody tr:hover{
+    background-color:#f9fafb;
+}
+th{
+   font-weight: bold; 
+   color: #283344;
+}
+td{
+    color: #38475d;  
+}
+
+
+.listeTable {
+    overflow-x: auto; /* Permet le scroll horizontal */
+    -webkit-overflow-scrolling: touch; /* Défilement fluide sur mobile */
+    width: 100%; /* S'adapte au conteneur parent */
+}
+
+@media (max-width: 768px) {
+    table {
+        min-width: 600px; /* Largeur minimale pour activer le défilement si le contenu dépasse */
+    }
+}
